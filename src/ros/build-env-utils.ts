@@ -1,6 +1,7 @@
 // Copyright (c) Andrew Short. All rights reserved.
 // Licensed under the MIT License.
 
+import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 
@@ -67,15 +68,23 @@ async function updateCppPropertiesInternal(): Promise<void> {
         });
     }));
 
-    await pfs.writeFile(filename, JSON.stringify({
+    let platform: string = os.platform();
+    let c_cpp_properties: any = {
         configurations: [
             {
                 browse: { databaseFilename: "", limitSymbolsToIncludedHeaders: true },
-                includePath: [...includes, "/usr/include"],
-                name: "Linux",
+                includePath: [...includes],
+                name: "Windows",
             },
         ],
-    }, undefined, 2));
+    };
+
+    if (platform != "win32") {
+        c_cpp_properties.configurations[0].name = "Linux"
+        c_cpp_properties.configurations[0].includePath.push("/usr/include");
+    }
+
+    await pfs.writeFile(filename, JSON.stringify(c_cpp_properties, undefined, 2));
 }
 
 export function updatePythonPath(context: vscode.ExtensionContext) {
