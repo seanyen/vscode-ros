@@ -68,23 +68,27 @@ async function updateCppPropertiesInternal(): Promise<void> {
         });
     }));
 
-    let platform: string = os.platform();
-    let c_cpp_properties: any = {
+    if (process.platform === "win32") {
+        includes.push(path.join("C:", "opt", "rosdeps", "x64", "include", "**"));
+    } else {
+        includes.push(path.join("/", "usr", "include"));
+    }
+
+    // https://github.com/Microsoft/vscode-cpptools/blob/master/Documentation/LanguageServer/c_cpp_properties.json.md
+    const cppProperties: any = {
         configurations: [
             {
-                browse: { databaseFilename: "", limitSymbolsToIncludedHeaders: true },
+                browse: {
+                    databaseFilename: "",
+                    limitSymbolsToIncludedHeaders: true,
+                },
                 includePath: [...includes],
-                name: "Windows",
+                name: "ROS",
             },
         ],
     };
 
-    if (platform != "win32") {
-        c_cpp_properties.configurations[0].name = "Linux"
-        c_cpp_properties.configurations[0].includePath.push("/usr/include");
-    }
-
-    await pfs.writeFile(filename, JSON.stringify(c_cpp_properties, undefined, 2));
+    await pfs.writeFile(filename, JSON.stringify(cppProperties, undefined, 2));
 }
 
 export function updatePythonPath(context: vscode.ExtensionContext) {
