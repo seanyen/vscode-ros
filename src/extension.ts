@@ -11,7 +11,7 @@ import * as pfs from "./promise-fs";
 import * as telemetry from "./telemetry-helper";
 import * as vscode_utils from "./vscode-utils";
 
-import * as buildtool from "./buildtool/buildtool"
+import * as buildtool from "./build-tool/build-tool"
 
 import * as ros_build_utils from "./ros/build-env-utils";
 import * as ros_cli from "./ros/cli";
