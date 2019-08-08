@@ -29,12 +29,7 @@ async function preparerosrun(): Promise<vscode.Terminal> {
         const executables = rosApi.findPackageExecutables(packageName).then(basenames);
         let target = await vscode.window.showQuickPick(executables, { placeHolder: "Choose an executable" });
         let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
-        let terminal = vscode.window.createTerminal({
-            env: extension.env,
-            name: "rosrun",
-        });
-        terminal.sendText(`rosrun ${packageName} ${target} ${argument}`);
-        return terminal;
+        return rosApi.activateRosrun(packageName, target, argument);
     } else {
         // none of the packages selected, error!
     }
@@ -60,12 +55,7 @@ async function prepareroslaunch(): Promise<vscode.Terminal> {
         const launchFileBasenames = launchFiles.map((filename) => path.basename(filename));
         let target = await vscode.window.showQuickPick(launchFileBasenames, { placeHolder: "Choose a launch file" });
         let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
-        let terminal = vscode.window.createTerminal({
-            env: extension.env,
-            name: "roslaunch",
-        });
-        terminal.sendText(`roslaunch ${launchFiles[launchFileBasenames.indexOf(target)]} ${argument}`);
-        return terminal;
+        return rosApi.activateRoslaunch(launchFiles[launchFileBasenames.indexOf(target)], argument);
     } else {
         // none of the packages selected, error!
     }

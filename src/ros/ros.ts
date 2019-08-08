@@ -52,6 +52,16 @@ export interface ROSApi {
      * Bring up ROS Core monitor GUI.
      */
     showCoreMonitor: () => void;
+
+    /**
+     * Activate a terminal for rosrun.
+     */
+    activateRosrun: (packageName: string, executableName:string, argument: string) => vscode.Terminal;
+
+    /**
+     * Activate a terminal for roslaunch.
+     */
+    activateRoslaunch: (launchFilepath: string, argument: string) => vscode.Terminal;
 }
 
 export let rosApi: ROSApi = new ros1.ROS1();

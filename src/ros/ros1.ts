@@ -122,6 +122,24 @@ export class ROS1 implements ros.ROSApi {
         ros_core.launchMonitor(this._context);
     }
 
+    public activateRosrun(packageName: string, executableName:string, argument: string): vscode.Terminal {
+        let terminal = vscode.window.createTerminal({
+            env: this._env,
+            name: "rosrun",
+        });
+        terminal.sendText(`rosrun ${packageName} ${executableName} ${argument}`);
+        return terminal;
+    }
+
+    public activateRoslaunch(launchFilepath: string, argument: string): vscode.Terminal {
+        let terminal = vscode.window.createTerminal({
+            env: this._env,
+            name: "roslaunch",
+        });
+        terminal.sendText(`roslaunch ${launchFilepath} ${argument}`);
+        return terminal;
+    }
+
     private _findPackageFiles(packageName: string, filter: string, pattern: string): Promise<string[]> {
         return new Promise((c, _e) => child_process.exec(`catkin_find --without-underlays ${filter} ${packageName}`,
             { env: extension.env }, (_err, out) => {
