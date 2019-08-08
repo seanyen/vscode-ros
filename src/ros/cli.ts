@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 import * as extension from "../extension";
 import * as telemetry from "../telemetry-helper";
-import * as utils from "./utils";
+import { rosApi } from "./ros"
 
 export async function rosrun(context: vscode.ExtensionContext) {
     const reporter = telemetry.getReporter(context);
@@ -17,7 +17,7 @@ export async function rosrun(context: vscode.ExtensionContext) {
 }
 
 async function preparerosrun(): Promise<vscode.Terminal> {
-    const getPackages = utils.getPackages();
+    const getPackages = rosApi.getPackages();
     const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
         return Object.keys(packages);
     }), {
@@ -26,7 +26,7 @@ async function preparerosrun(): Promise<vscode.Terminal> {
     if (packageName !== undefined) {
         let basenames = (files: string[]) => files.map((file) => path.basename(file));
 
-        const executables = utils.findPackageExecutables(packageName).then(basenames);
+        const executables = rosApi.findPackageExecutables(packageName).then(basenames);
         let target = await vscode.window.showQuickPick(executables, { placeHolder: "Choose an executable" });
         let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
         let terminal = vscode.window.createTerminal({
@@ -49,14 +49,14 @@ export async function roslaunch(context: vscode.ExtensionContext) {
 }
 
 async function prepareroslaunch(): Promise<vscode.Terminal> {
-    const getPackages = utils.getPackages();
+    const getPackages = rosApi.getPackages();
     const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
         return Object.keys(packages);
     }), {
         placeHolder: "Choose a package",
     });
     if (packageName !== undefined) {
-        const launchFiles = await utils.findPackageLaunchFiles(packageName);
+        const launchFiles = await rosApi.findPackageLaunchFiles(packageName);
         const launchFileBasenames = launchFiles.map((filename) => path.basename(filename));
         let target = await vscode.window.showQuickPick(launchFileBasenames, { placeHolder: "Choose a launch file" });
         let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
