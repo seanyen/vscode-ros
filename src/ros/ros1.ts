@@ -96,14 +96,23 @@ export class ROS1 implements ros.ROSApi {
     }
 
     public startCore() {
+        if (typeof this._env.ROS_MASTER_URI === "undefined") {
+            return; 
+        }
         ros_core.startCore(this._context);
     }
 
     public stopCore() {
+        if (typeof this._env.ROS_MASTER_URI === "undefined") {
+            return; 
+        }
         ros_core.stopCore(this._context, this._getXmlRpcApi());
     }
 
     public activateCoreMonitor(): vscode.Disposable {
+        if (typeof this._env.ROS_MASTER_URI === "undefined") {
+            return null; 
+        }
         const coreStatusItem = new ros_core.StatusBarItem(this._getXmlRpcApi());
         coreStatusItem.activate();
         return coreStatusItem;

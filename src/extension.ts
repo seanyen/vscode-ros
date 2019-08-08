@@ -132,8 +132,6 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         return;
     }
 
-    vscode.window.showInformationMessage(`Current distro: ${env.ROS_DISTRO}`)
-
     rosApi.setContext(context, env);
     subscriptions.push(rosApi.activateCoreMonitor());
     subscriptions.push(buildtool.BuildTool.registerTaskProvider());
