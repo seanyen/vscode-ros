@@ -30,13 +30,15 @@ export class ROS2 implements ros.ROSApi {
     }
 
     public getPackages(): Promise<{ [name: string]: string }> {
-        // not yet implemented.
-        return;
+        return new Promise((resolve, reject) => {
+            reject("not yet implemented");
+        });
     }
 
     public getIncludeDirs(): Promise<string[]> {
-        // not yet implemented.
-        return;
+        return new Promise((resolve, reject) => {
+            reject("not yet implemented");
+        });
     }
 
     public findPackageExecutables(packageName: string): Promise<string[]> {
@@ -63,8 +65,9 @@ export class ROS2 implements ros.ROSApi {
     }
 
     public findPackageLaunchFiles(packageName: string): Promise<string[]> {
-        // not yet implemented.
-        return;
+        return new Promise((resolve, reject) => {
+            reject("not yet implemented");
+        });
     }
 
     public startCore() {
@@ -79,7 +82,7 @@ export class ROS2 implements ros.ROSApi {
 
     public activateCoreMonitor(): vscode.Disposable {
         // not yet implemented.
-        return;
+        return null;
     }
 
     public showCoreMonitor() {
@@ -98,6 +101,6 @@ export class ROS2 implements ros.ROSApi {
 
     public activateRoslaunch(launchFilepath: string, argument: string): vscode.Terminal {
         // not yet implemented.
-        return;
+        return null;
     }
 }

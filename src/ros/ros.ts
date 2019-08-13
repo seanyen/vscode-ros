@@ -77,21 +77,14 @@ const unknownRosApi: ROSApi = new unknownROS.UnknownROS();
 
 export let rosApi: ROSApi = unknownRosApi;
 
-export function selectROSApi(distro: string) {
+export function selectROSApi(version: string) {
     rosApi = unknownRosApi;
-    switch(distro.toLowerCase()) {
-        case "kinetic":
-        case "lunar":
-        case "melodic":
-        case "noetic": {
+    switch(version.trim()) {
+        case "1": {
             rosApi = ros1Api;
             break;
         }
-        case "ardent":
-        case "bouncy":
-        case "crystal":
-        case "dashing":
-        case "eloquent": {
+        case "2": {
             rosApi = ros2Api;
             break;
         }

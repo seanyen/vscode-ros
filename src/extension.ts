@@ -132,7 +132,11 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         return;
     }
 
-    selectROSApi(env.ROS_DISTRO);
+    if (typeof env.ROS_VERSION === "undefined") {
+        return;
+    }
+
+    selectROSApi(env.ROS_VERSION);
     rosApi.setContext(context, env);
 
     subscriptions.push(rosApi.activateCoreMonitor());
