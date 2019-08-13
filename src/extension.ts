@@ -136,6 +136,8 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         return;
     }
 
+    // http://www.ros.org/reps/rep-0149.html#environment-variables
+    // Learn more about ROS_VERSION definition.
     selectROSApi(env.ROS_VERSION);
     rosApi.setContext(context, env);
 
