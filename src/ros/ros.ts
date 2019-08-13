@@ -82,14 +82,16 @@ export function selectROSApi(distro: string) {
     switch(distro.toLowerCase()) {
         case "kinetic":
         case "lunar":
-        case "melodic": {
+        case "melodic":
+        case "noetic": {
             rosApi = ros1Api;
             break;
         }
         case "ardent":
         case "bouncy":
         case "crystal":
-        case "dashing": {
+        case "dashing":
+        case "eloquent": {
             rosApi = ros2Api;
             break;
         }
