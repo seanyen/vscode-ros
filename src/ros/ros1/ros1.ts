@@ -7,7 +7,6 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 
-import * as extension from "../../extension";
 import * as ros from "../ros";
 import * as ros_core from "./core-helper";
 
@@ -21,8 +20,14 @@ export class ROS1 implements ros.ROSApi {
         this._env = env;
     }
 
+    public getPackageNames(): Promise<string[]> {
+        return this.getPackages().then((packages: { [name: string]: string }) => {
+            return Object.keys(packages);
+        });
+    }
+
     public getPackages(): Promise<{ [name: string]: string }> {
-        return new Promise((resolve, reject) => child_process.exec("rospack list", { env: extension.env }, (err, out) => {
+        return new Promise((resolve, reject) => child_process.exec("rospack list", { env: this._env }, (err, out) => {
             if (!err) {
                 const lines = out.trim().split(os.EOL).map(((line) => {
                     const info: string[] = line.split(" ");
@@ -47,8 +52,8 @@ export class ROS1 implements ros.ROSApi {
 
     public getIncludeDirs(): Promise<string[]> {
         const cmakePrefixPaths: string[] = [];
-        if (extension.env.hasOwnProperty("CMAKE_PREFIX_PATH")) {
-            cmakePrefixPaths.push(...extension.env.CMAKE_PREFIX_PATH.split(path.delimiter));
+        if (this._env.hasOwnProperty("CMAKE_PREFIX_PATH")) {
+            cmakePrefixPaths.push(...this._env.CMAKE_PREFIX_PATH.split(path.delimiter));
         }
 
         const includeDirs: string[] = [];
@@ -74,7 +79,7 @@ export class ROS1 implements ros.ROSApi {
         } else {
             const dirs = `catkin_find --without-underlays --libexec --share '${packageName}'`;
             command = `find $(${dirs}) -type f -executable`;
-            return new Promise((c, e) => child_process.exec(command, { env: extension.env }, (err, out) =>
+            return new Promise((c, e) => child_process.exec(command, { env: this._env }, (err, out) =>
                 err ? e(err) : c(out.trim().split(os.EOL))
             ));
         }
@@ -90,7 +95,7 @@ export class ROS1 implements ros.ROSApi {
             command = `find $(${dirs}) -type f -name *.launch`;
         }
 
-        return new Promise((c, e) => child_process.exec(command, { env: extension.env }, (err, out) => {
+        return new Promise((c, e) => child_process.exec(command, { env: this._env }, (err, out) => {
             err ? e(err) : c(out.trim().split(os.EOL));
         }));
     }
@@ -142,13 +147,13 @@ export class ROS1 implements ros.ROSApi {
 
     private _findPackageFiles(packageName: string, filter: string, pattern: string): Promise<string[]> {
         return new Promise((c, _e) => child_process.exec(`catkin_find --without-underlays ${filter} ${packageName}`,
-            { env: extension.env }, (_err, out) => {
+            { env: this._env }, (_err, out) => {
                 let findFilePromises = [];
                 let paths = out.trim().split(os.EOL);
                 paths.forEach(foundPath => {
                     let normalizedPath = path.win32.normalize(foundPath);
                     findFilePromises.push(new Promise((found) => child_process.exec(`where /r "${normalizedPath}" ` + pattern,
-                        { env: extension.env }, (err, out) =>
+                        { env: this._env }, (err, out) =>
                             err ? found(null) : found(out.trim().split(os.EOL))
                     )));
                 });

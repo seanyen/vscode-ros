@@ -12,6 +12,11 @@ export class UnknownROS implements ros.ROSApi {
     public setContext(context: vscode.ExtensionContext, env: any) {
     }
 
+    public getPackageNames(): Promise<string[]> {
+        // not yet implemented.
+        return;
+    }
+
     public getPackages(): Promise<{ [name: string]: string }> {
         // not yet implemented.
         return;

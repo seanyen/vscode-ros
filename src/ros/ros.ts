@@ -14,6 +14,11 @@ export interface ROSApi {
     setContext: (context: vscode.ExtensionContext, env: any) => void;
 
     /**
+     * Get a list of packages.
+     */
+    getPackageNames: () => Promise<string[]>;
+
+    /**
      * Gets a map of package names to paths.
      */
     getPackages: () => Promise<{ [name: string]: string }>;
