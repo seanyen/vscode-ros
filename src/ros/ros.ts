@@ -3,7 +3,9 @@
 
 import * as vscode from "vscode";
 
-import * as ros1 from './ros1'
+import * as ros1 from './ros1/ros1'
+import * as ros2 from './ros2/ros2'
+import * as unknownROS from './common/unknown-ros'
 
 export interface ROSApi {
     /**
@@ -64,4 +66,27 @@ export interface ROSApi {
     activateRoslaunch: (launchFilepath: string, argument: string) => vscode.Terminal;
 }
 
-export let rosApi: ROSApi = new ros1.ROS1();
+const ros1Api: ROSApi = new ros1.ROS1();
+const ros2Api: ROSApi = new ros2.ROS2();
+const unknownRosApi: ROSApi = new unknownROS.UnknownROS();
+
+export let rosApi: ROSApi = unknownRosApi;
+
+export function selectROSApi(distro: string) {
+    rosApi = unknownRosApi;
+    switch(distro.toLowerCase()) {
+        case "kinetic":
+        case "lunar":
+        case "melodic": {
+            rosApi = ros1Api;
+            break;
+        }
+        case "ardent":
+        case "bouncy":
+        case "crystal":
+        case "dashing": {
+            rosApi = ros2Api;
+            break;
+        }
+    }
+}

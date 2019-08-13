@@ -14,7 +14,7 @@ import * as buildtool from "./build-tool/build-tool";
 import * as ros_build_utils from "./ros/build-env-utils";
 import * as ros_cli from "./ros/cli";
 import * as ros_utils from "./ros/utils";
-import { rosApi } from "./ros/ros";
+import { rosApi, selectROSApi } from "./ros/ros";
 import URDFPreviewManager from "./urdfPreview/previewManager"
 
 import * as debug_manager from "./debugger/manager";
@@ -132,7 +132,9 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         return;
     }
 
+    selectROSApi(env.ROS_DISTRO);
     rosApi.setContext(context, env);
+
     subscriptions.push(rosApi.activateCoreMonitor());
     subscriptions.push(buildtool.BuildTool.registerTaskProvider());
 
