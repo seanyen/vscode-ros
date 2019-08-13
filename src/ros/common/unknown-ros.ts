@@ -13,57 +13,57 @@ export class UnknownROS implements ros.ROSApi {
     }
 
     public getPackageNames(): Promise<string[]> {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public getPackages(): Promise<{ [name: string]: string }> {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public getIncludeDirs(): Promise<string[]> {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public findPackageExecutables(packageName: string): Promise<string[]> {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public findPackageLaunchFiles(packageName: string): Promise<string[]> {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public startCore() {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public stopCore() {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public activateCoreMonitor(): vscode.Disposable {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public showCoreMonitor() {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public activateRosrun(packageName: string, executableName:string, argument: string): vscode.Terminal {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 
     public activateRoslaunch(launchFilepath: string, argument: string): vscode.Terminal {
-        // not yet implemented.
+        console.error("Unknown ROS distro.");
         return;
     }
 }
