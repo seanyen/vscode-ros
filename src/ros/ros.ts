@@ -3,9 +3,9 @@
 
 import * as vscode from "vscode";
 
-import * as ros1 from './ros1/ros1'
-import * as ros2 from './ros2/ros2'
-import * as unknownROS from './common/unknown-ros'
+import * as unknownROS from "./common/unknown-ros";
+import * as ros1 from "./ros1/ros1";
+import * as ros2 from "./ros2/ros2";
 
 export interface ROSApi {
     /**
