@@ -187,7 +187,7 @@ export class XmlRpcApi {
  */
 export class StatusBarItem {
     private item: vscode.StatusBarItem;
-    private timer: NodeJS.Timer;
+    private timer: NodeJS.Timeout;
     private status: boolean;
 
     public constructor(private api: XmlRpcApi) {

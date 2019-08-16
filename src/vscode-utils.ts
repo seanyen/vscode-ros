@@ -4,6 +4,8 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
+import * as fs from "fs";
+
 export interface IPackageInfo {
     name: string;
     version: string;
@@ -12,7 +14,8 @@ export interface IPackageInfo {
 
 export function getPackageInfo(context: vscode.ExtensionContext): IPackageInfo {
     const metadataFile: string = "package.json";
-    const metadata = require(path.join(context.extensionPath, metadataFile));
+    const content = fs.readFileSync(path.join(context.extensionPath, metadataFile), 'utf8');
+    const metadata = JSON.parse(content);
     if (metadata && ("name" in metadata) && ("version" in metadata) && ("aiKey" in metadata)) {
         return {
             name: metadata.name,
