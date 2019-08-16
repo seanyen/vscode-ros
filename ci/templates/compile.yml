@@ -6,3 +6,10 @@ steps:
       verbose: false
       customCommand: |
         run buildOnce
+  - task: Npm@1
+    displayName: 'Compile test sources'
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: |
+        run test-compile
