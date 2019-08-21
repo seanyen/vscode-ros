@@ -56,6 +56,8 @@ export class StatusBarItem {
         try {
             const result = await this.ros2cli.getNodeNamesAndNamespaces();
             status = true;
+        } catch (error) {
+            // do nothing.
         } finally {
             this.item.text = (status ? "$(check)" : "$(x)") + " ROS2 Daemon";
             this.timeout = setTimeout(() => this.update(), 200);
