@@ -80,7 +80,7 @@ function getCoreStatusWebviewContent(stylesheet: vscode.Uri, script: vscode.Uri)
 </head>
 
 <body>
-    <h1>ROS Core Status</h1>
+    <h1>ROS2 System Status</h1>
     <h2 id="ros-status">-</h2>
 
     <div id="parameters"></div>
