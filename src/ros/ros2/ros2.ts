@@ -13,6 +13,7 @@ import * as daemon from "./daemon";
 import * as ros2_monitor from "./ros2-monitor";
 
 const promisifiedExists = util.promisify(fs.exists);
+const promisifiedExec = util.promisify(child_process.exec);
 
 export class ROS2 implements ros.ROSApi {
     private context: vscode.ExtensionContext;
@@ -75,6 +76,28 @@ export class ROS2 implements ros.ROSApi {
         }
 
         return includeDirs;
+    }
+
+    public async getWorkspaceIncludeDirs(workspaceDir: string): Promise<string[]> {
+        const includes: string[] = [];
+        const opts = { env: this.env };
+        const result = await promisifiedExec(`colcon list -p --base-paths "${workspaceDir}"`, opts);
+
+        // error out if we see anything from stderr.
+        if (result.stderr) {
+            return includes;
+        }
+
+        // each line should be a path like `c:\ros2_ws\src\demos\demo_nodes_cpp`
+        for (const line of result.stdout.split(os.EOL)) {
+            const include = path.join(line, "include");
+
+            if (await promisifiedExists(include)) {
+                includes.push(include);
+            }
+        }
+
+        return includes;
     }
 
     public findPackageExecutables(packageName: string): Promise<string[]> {
