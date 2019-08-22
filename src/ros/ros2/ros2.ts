@@ -2,12 +2,17 @@
 // Licensed under the MIT License.
 
 import * as child_process from "child_process";
+import * as fs from "fs";
 import * as os from "os";
+import * as path from "path";
+import * as util from "util";
 import * as vscode from "vscode";
 
 import * as ros from "../ros";
 import * as daemon from "./daemon";
 import * as ros2_monitor from "./ros2-monitor";
+
+const promisifiedExists = util.promisify(fs.exists);
 
 export class ROS2 implements ros.ROSApi {
     private context: vscode.ExtensionContext;
@@ -55,10 +60,21 @@ export class ROS2 implements ros.ROSApi {
         return packages;
     }
 
-    public getIncludeDirs(): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            reject("not yet implemented");
-        });
+    public async getIncludeDirs(): Promise<string[]> {
+        const prefixPaths: string[] = [];
+        if (this.env.COLCON_PREFIX_PATH) {
+            prefixPaths.push(...this.env.COLCON_PREFIX_PATH.split(path.delimiter));
+        }
+
+        const includeDirs: string[] = [];
+        for (const dir of prefixPaths) {
+            const include = path.join(dir, "include");
+            if (await promisifiedExists(include)) {
+                includeDirs.push(include);
+            }
+        }
+
+        return includeDirs;
     }
 
     public findPackageExecutables(packageName: string): Promise<string[]> {
