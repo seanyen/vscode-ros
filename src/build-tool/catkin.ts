@@ -24,7 +24,6 @@ export class CatkinProvider implements vscode.TaskProvider {
     private provideCatkinMakeTasks(): vscode.Task[] {
         const catkinMakeDefinition: vscode.TaskDefinition = {
             type: "catkin_make",
-            target: "build",
         };
         const make = new vscode.Task(catkinMakeDefinition, "build", "catkin_make");
         const buildCommand = `catkin_make --directory "${extension.baseDir}"`;
@@ -36,7 +35,6 @@ export class CatkinProvider implements vscode.TaskProvider {
 
         const catkinMakeRunTestsDefinition: vscode.TaskDefinition = {
             type: "catkin_make",
-            target: "run_tests",
         };
         const test = new vscode.Task(catkinMakeRunTestsDefinition, "run_tests", "catkin_make");
         const testCommand = `${buildCommand} run_tests`;
@@ -51,7 +49,6 @@ export class CatkinProvider implements vscode.TaskProvider {
     private provideCatkinMakeIsolatedTasks(): vscode.Task[] {
         const catkinMakeIsolatedDefinition: vscode.TaskDefinition = {
             type: "catkin_make_isolated",
-            target: "build",
         };
         const make = new vscode.Task(catkinMakeIsolatedDefinition, "build", "catkin_make_isolated");
         const buildCommand = `catkin_make_isolated --directory "${extension.baseDir}"`;
@@ -63,7 +60,6 @@ export class CatkinProvider implements vscode.TaskProvider {
 
         const catkinMakeIsolatedRunTestsDefinition: vscode.TaskDefinition = {
             type: "catkin_make_isolated",
-            target: "run_tests",
         };
         const test = new vscode.Task(catkinMakeIsolatedRunTestsDefinition, "run_tests", "catkin_make_isolated");
         const testCommand = `${buildCommand} --catkin-make-args run_tests`;
