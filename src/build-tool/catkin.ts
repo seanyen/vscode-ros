@@ -7,14 +7,12 @@ import * as extension from "../extension";
 import * as common from "./common";
 
 /**
- * Provides catkin build and test tasks
- * including catkin_make and catkin_make_isolated
+ * Provides catkin_make build and test tasks
  */
-export class CatkinProvider implements vscode.TaskProvider {
+export class CatkinMakeProvider implements vscode.TaskProvider {
     public provideTasks(token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task[]> {
         const tasksCatkinMake = this.provideCatkinMakeTasks();
-        const tasksCatkinMakeIsolated = this.provideCatkinMakeIsolatedTasks();
-        return [...tasksCatkinMake, ...tasksCatkinMakeIsolated];
+        return [...tasksCatkinMake];
     }
 
     public resolveTask(task: vscode.Task, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task> {
@@ -44,6 +42,21 @@ export class CatkinProvider implements vscode.TaskProvider {
         test.group = vscode.TaskGroup.Test;
 
         return [make, test];
+    }
+}
+
+/**
+ * Provides catkin_make_isolated build and test tasks
+ */
+// tslint:disable-next-line: max-classes-per-file
+export class CatkinMakeIsolatedProvider implements vscode.TaskProvider {
+    public provideTasks(token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task[]> {
+        const tasksCatkinMakeIsolated = this.provideCatkinMakeIsolatedTasks();
+        return [...tasksCatkinMakeIsolated];
+    }
+
+    public resolveTask(task: vscode.Task, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task> {
+        return undefined;
     }
 
     private provideCatkinMakeIsolatedTasks(): vscode.Task[] {
