@@ -6,8 +6,6 @@ The [Visual Studio Code][vscode] Extension for ROS provides support for [Robot O
 
 ## Getting Started
 
-[![ROSCON 2019 ROS Extension Talk Video](https://i.vimeocdn.com/video/839088609_640.webp)](https://vimeopro.com/osrfoundation/roscon-2019/video/379127667)
-
 The extension will automatically start when you open a catkin workspace.
 The build system (e.g. catkin_make or catkin build) will automatically be confirmed from the hidden files associated with
 each system.
@@ -21,6 +19,8 @@ The "ROS Core" indicator in the bottom left will show if the core is currently r
 
 The first time you open the workspace the extension will automatically create build and test tasks and update the
 C++ and Python paths. You can re-run this process later using the appropriate commands.
+
+[![ROSCON 2019 ROS Extension Talk Video](https://i.vimeocdn.com/video/839088609_640.webp)](https://vimeopro.com/osrfoundation/roscon-2019/video/379127667)
 
 ## Features
 
