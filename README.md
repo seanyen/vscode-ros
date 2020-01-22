@@ -6,6 +6,8 @@ The [Visual Studio Code][vscode] Extension for ROS provides support for [Robot O
 
 ## Getting Started
 
+<iframe title="vimeo-player" src="https://player.vimeo.com/video/379127667" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+
 The extension will automatically start when you open a catkin workspace.
 The build system (e.g. catkin_make or catkin build) will automatically be confirmed from the hidden files associated with
 each system.
