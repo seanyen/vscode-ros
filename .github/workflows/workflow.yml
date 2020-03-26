@@ -2,9 +2,11 @@ on:
   push:
     branches:
       - master
+      - seanyen**
   pull_request:
     branches:
       - master
+      - seanyen**
   release:
     types:
       - published
