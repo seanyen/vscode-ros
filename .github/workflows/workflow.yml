@@ -2,11 +2,9 @@ on:
   push:
     branches:
       - master
-      - seanyen**
   pull_request:
     branches:
       - master
-      - seanyen**
   release:
     types:
       - published
@@ -54,7 +52,7 @@ jobs:
           path: vscode-ros-dev.vsix
   publish-vsix:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
+    if: github.event_name == 'release' && github.event.action == 'published' && github.repository == 'ms-iot/vscode-ros'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -70,4 +68,4 @@ jobs:
           vsce package -o vscode-ros.vsix
       - name: Publish VSIX package
         run: |
-          vsce publish -p 1234
+          vsce publish -p ${{secrets.MARKETPLACE_PUBLISHER_TOKEN}}
