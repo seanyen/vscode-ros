@@ -1,4 +1,4 @@
-# Visual Studio Code Extension for ROS
+# Visual Studio Code Extension for ROS~
 
 [![Build Status][vscode-ros-master-build_status]][vscode-ros-master-build_details]
 
