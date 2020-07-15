@@ -129,7 +129,8 @@ export default class URDFPreview
 
                 packagePath = packagePath.substr(1);
             }
-            urdfText = urdfText.replace('package://' + match[1], packagePath);
+            let newUri = this._webview.webview.asWebviewUri(vscode.Uri.file(packagePath));
+            urdfText = urdfText.replace('package://' + match[1], newUri.toString().replace('vscode-webview-resource:', ''));
         }
 
         var previewFile = this._resource.toString();
