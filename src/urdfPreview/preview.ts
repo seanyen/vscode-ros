@@ -121,10 +121,10 @@ export default class URDFPreview
                 // inside of mesh re \source, the loader attempts to concatinate the base uri with the new path. It first checks to see if the
                 // base path has a /, if not it adds it.
                 // We are attempting to use a protocol handler as the base path - which causes this to fail.
-                // basepath - vscode-resource:
+                // basepath - vscode-webview-resource:
                 // full path - /home/test/ros
-                // vscode-resource://home/test/ros.
-                // It should be vscode-resource:/home/test/ros.
+                // vscode-webview-resource://home/test/ros.
+                // It should be vscode-webview-resource:/home/test/ros.
                 // So remove the first char.
 
                 packagePath = packagePath.substr(1);
