@@ -155,6 +155,11 @@ export class ROS2 implements ros.ROSApi {
         daemon.stopDaemon();
     }
 
+    public async getCoreStatus(): Promise<boolean> {
+        const ros2cliApi = new ros2_monitor.XmlRpcApi();
+        return ros2cliApi.check();
+    }
+
     public rosdep(): vscode.Terminal {
       const terminal = ros_utils.createTerminal(this.context);
       terminal.sendText(`rosdep install --from-paths src --ignore-src -r -y`);
