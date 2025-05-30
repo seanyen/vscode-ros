@@ -22,18 +22,10 @@ import * as debug_utils from "./debugger/utils";
 import { registerRosShellTaskProvider } from "./build-tool/ros-shell";
 
 /**
- * The catkin workspace base dir.
- */
-export let baseDir: string;
-
-export function setBaseDir(dir: string) {
-    baseDir = dir;
-}
-
-/**
  * The sourced ROS environment.
  */
 export let env: any;
+export let processingWorkspace = false;
 
 export let extPath: string;
 export let outputChannel: vscode.OutputChannel;
@@ -109,15 +101,88 @@ export async function activate(context: vscode.ExtensionContext) {
             config = updatedConfig;
         }));
 
-        await sourceRosAndWorkspace().then(() =>
-        {
-            vscode.window.registerWebviewPanelSerializer('urdfPreview', URDFPreviewManager.INSTANCE);
+        vscode.window.registerWebviewPanelSerializer('urdfPreview', URDFPreviewManager.INSTANCE);
+
+        vscode.commands.registerCommand(Commands.CreateTerminal, () => {
+            ensureErrorMessageOnException(() => {
+                ros_utils.createTerminal(context);
+            });
         });
+
+        vscode.commands.registerCommand(Commands.GetDebugSettings, () => {
+            ensureErrorMessageOnException(() => {
+                return debug_utils.getDebugSettings(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.ShowCoreStatus, () => {
+            ensureErrorMessageOnException(() => {
+                rosApi.showCoreMonitor();
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.StartRosCore, () => {
+            ensureErrorMessageOnException(() => {
+                rosApi.startCore();
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.TerminateRosCore, () => {
+            ensureErrorMessageOnException(() => {
+                rosApi.stopCore();
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.UpdateCppProperties, () => {
+            ensureErrorMessageOnException(() => {
+                return ros_build_utils.updateCppProperties(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.UpdatePythonPath, () => {
+            ensureErrorMessageOnException(() => {
+                ros_build_utils.updatePythonPath(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.Rosrun, () => {
+            ensureErrorMessageOnException(() => {
+                return ros_cli.rosrun(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.Roslaunch, () => {
+            ensureErrorMessageOnException(() => {
+                return ros_cli.roslaunch(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.Rostest, () => {
+            ensureErrorMessageOnException(() => {
+                return ros_cli.rostest(context);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.PreviewURDF, () => {
+            ensureErrorMessageOnException(() => {
+                URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri);
+            });
+        });
+
+        vscode.commands.registerCommand(Commands.Rosdep, () => {
+            ensureErrorMessageOnException(() => {
+                rosApi.rosdep();
+            });
+        });
+
 
         reporter.sendTelemetryActivate();
 
+
+        // Activate the workspace environment if possible.
+        await activateEnvironment(context);
+
         return {
-            getBaseDir: () => baseDir,
             getEnv: () => env,
             onDidChangeEnv: (listener: () => any, thisArg: any) => onDidChangeEnv(listener, thisArg),
         };
@@ -143,18 +208,31 @@ async function ensureErrorMessageOnException(callback: (...args: any[]) => any) 
  * Activates components which require a ROS env.
  */
 async function activateEnvironment(context: vscode.ExtensionContext) {
+
+    if (processingWorkspace) {
+        return;
+    }
+
+    processingWorkspace = true;
+
     // Clear existing disposables.
     while (subscriptions.length > 0) {
         subscriptions.pop().dispose();
     }
 
+    await sourceRosAndWorkspace();
+
     if (typeof env.ROS_DISTRO === "undefined") {
+        processingWorkspace = false;
         return;
     }
 
     if (typeof env.ROS_VERSION === "undefined") {
+        processingWorkspace = false;
         return;
     }
+
+    outputChannel.appendLine(`Determining build tool for workspace: ${vscode.workspace.rootPath}`);
 
     // Determine if we're in a catkin workspace.
     let buildToolDetected = await buildtool.determineBuildTool(vscode.workspace.rootPath);
@@ -162,74 +240,22 @@ async function activateEnvironment(context: vscode.ExtensionContext) {
     // http://www.ros.org/reps/rep-0149.html#environment-variables
     // Learn more about ROS_VERSION definition.
     selectROSApi(env.ROS_VERSION);
+
+    // Do this again, after the build tool has been determined.
+    await sourceRosAndWorkspace();
+
     rosApi.setContext(context, env);
 
     subscriptions.push(rosApi.activateCoreMonitor());
     if (buildToolDetected) {
         subscriptions.push(...buildtool.BuildTool.registerTaskProvider());
+    } else {
+        outputChannel.appendLine(`Build tool NOT detected`);
+
     }
     subscriptions.push(...registerRosShellTaskProvider());
 
     debug_manager.registerRosDebugManager(context);
-
-    // register plugin commands
-    subscriptions.push(
-        vscode.commands.registerCommand(Commands.CreateTerminal, () => {
-            ensureErrorMessageOnException(() => {
-                ros_utils.createTerminal(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.GetDebugSettings, () => {
-            ensureErrorMessageOnException(() => {
-                return debug_utils.getDebugSettings(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.ShowCoreStatus, () => {
-            ensureErrorMessageOnException(() => {
-                rosApi.showCoreMonitor();
-            });
-        }),
-        vscode.commands.registerCommand(Commands.StartRosCore, () => {
-            ensureErrorMessageOnException(() => {
-                rosApi.startCore();
-            });
-        }),
-        vscode.commands.registerCommand(Commands.TerminateRosCore, () => {
-            ensureErrorMessageOnException(() => {
-                rosApi.stopCore();
-            });
-        }),
-        vscode.commands.registerCommand(Commands.UpdateCppProperties, () => {
-            ensureErrorMessageOnException(() => {
-                return ros_build_utils.updateCppProperties(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.UpdatePythonPath, () => {
-            ensureErrorMessageOnException(() => {
-                ros_build_utils.updatePythonPath(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.Rosrun, () => {
-            ensureErrorMessageOnException(() => {
-                return ros_cli.rosrun(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.Roslaunch, () => {
-            ensureErrorMessageOnException(() => {
-                return ros_cli.roslaunch(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.Rostest, () => {
-            ensureErrorMessageOnException(() => {
-                return ros_cli.rostest(context);
-            });
-        }),
-        vscode.commands.registerCommand(Commands.PreviewURDF, () => {
-            ensureErrorMessageOnException(() => {
-                URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri);
-            });
-        }),
-    );
 
     // Register commands dependent on a workspace
     if (buildToolDetected) {
@@ -237,11 +263,6 @@ async function activateEnvironment(context: vscode.ExtensionContext) {
             vscode.commands.registerCommand(Commands.CreateCatkinPackage, () => {
                 ensureErrorMessageOnException(() => {
                     return buildtool.BuildTool.createPackage(context);
-                });
-            }),
-            vscode.commands.registerCommand(Commands.Rosdep, () => {
-                ensureErrorMessageOnException(() => {
-                    rosApi.rosdep();
                 });
             }),
             vscode.tasks.onDidEndTask((event: vscode.TaskEndEvent) => {
@@ -256,9 +277,6 @@ async function activateEnvironment(context: vscode.ExtensionContext) {
             vscode.commands.registerCommand(Commands.CreateCatkinPackage, () => {
                 vscode.window.showErrorMessage(`${Commands.CreateCatkinPackage} requires a ROS workspace to be opened`);
             }),
-            vscode.commands.registerCommand(Commands.Rosdep, () => {
-                vscode.window.showErrorMessage(`${Commands.Rosdep} requires a ROS workspace to be opened`);
-            }),
         );
     }
 
@@ -266,13 +284,20 @@ async function activateEnvironment(context: vscode.ExtensionContext) {
     if (buildToolDetected) {
         ros_build_utils.createConfigFiles();
     }
+
+    processingWorkspace = false;
 }
 
 /**
  * Loads the ROS environment, and prompts the user to select a distro if required.
  */
 async function sourceRosAndWorkspace(): Promise<void> {
-    env = undefined;
+
+    // Processing a new environment can take time which introduces a race condition. 
+    // Wait to atomicly switch by composing a new environment block then switching at the end.
+    let newEnv = undefined;
+
+    outputChannel.appendLine("Sourcing ROS and Workspace");
 
     const kWorkspaceConfigTimeout = 30000; // ms
 
@@ -287,7 +312,7 @@ async function sourceRosAndWorkspace(): Promise<void> {
     let isolateEnvironment = config.get("isolateEnvironment", "");
     if (!isolateEnvironment) {
         // Capture the host environment unless specifically isolated
-        env = process.env;
+        newEnv = process.env;
     }
 
 
@@ -297,36 +322,65 @@ async function sourceRosAndWorkspace(): Promise<void> {
     let attemptWorkspaceDiscovery = true;
 
     if (rosSetupScript) {
+        // Regular expression to match '${workspaceFolder}'
+        const regex = "\$\{workspaceFolder\}";
+        if (rosSetupScript.includes(regex)) {
+            if (vscode.workspace.workspaceFolders.length === 1) {
+                // Replace all occurrences of '${workspaceFolder}' with the workspace string
+                rosSetupScript = rosSetupScript.replace(regex, vscode.workspace.workspaceFolders[0].uri.fsPath);
+            } else {
+                outputChannel.appendLine(`Multiple or no workspaces found, but the ROS setup script setting \"ros.rosSetupScript\" is configured with '${rosSetupScript}'`);
+            }
+        }
+
         // Try to support cases where the setup script doesn't make sense on different environments, such as host vs container.
-        if (await pfs.exists(rosSetupScript)){
+        if (await pfs.exists(rosSetupScript)) {
             try {
-                env = await ros_utils.sourceSetupFile(rosSetupScript, env);
+                newEnv = await ros_utils.sourceSetupFile(rosSetupScript, newEnv);
+
+                outputChannel.appendLine(`Sourced ${rosSetupScript}`);
 
                 attemptWorkspaceDiscovery = false;
             } catch (err) {
-                vscode.window.showErrorMessage(`A workspace setup script was provided in the configuration, but could not source "${rosSetupScript}". Attempting standard discovery.`);
+                vscode.window.showErrorMessage(`A ROS setup script was provided, but could not source "${rosSetupScript}". Attempting standard discovery.`);
             }
         }
     }
-    
+
     if (attemptWorkspaceDiscovery) {
         let distro = config.get("distro", "");
 
         // Is there a distro defined either by setting or environment?
-        if (!distro && !process.env.ROS_DISTRO)
-        {
+        outputChannel.appendLine(`Current ROS_DISTRO environment variable: ${process.env.ROS_DISTRO}`);
+        if (!distro) {
             // No? Try to find one.
             const installedDistros = await ros_utils.getDistros();
             if (!installedDistros.length) {
+                outputChannel.appendLine(`No distros found.`);
+
                 throw new Error("ROS has not been found on this system.");
             } else if (installedDistros.length === 1) {
-                
+                outputChannel.appendLine(`Only one distro, selecting ${installedDistros[0]}`);
+
                 // if there is only one distro installed, directly choose it
                 config.update("distro", installedDistros[0]);
+                distro = installedDistros[0];
             } else {
+                outputChannel.appendLine(`Multiple distros found, prompting user to select one.`);
+                // dump installedDistros to outputChannel
+                outputChannel.appendLine(`Installed distros: ${installedDistros}`);
+
                 const message = "Unable to determine ROS distribution, please configure this workspace by adding \"ros.distro\": \"<ROS Distro>\" in settings.json";
                 await vscode.window.setStatusBarMessage(message, kWorkspaceConfigTimeout);
             }
+        }
+
+        if (process.env.ROS_DISTRO && process.env.ROS_DISTRO !== distro) {
+            outputChannel.appendLine(`ROS_DISTRO environment variable (${process.env.ROS_DISTRO}) does not match configured distro (${distro}).`);
+
+            outputChannel.appendLine(`Overriding the configured distro with the environment variable.`);
+
+            distro = process.env.ROS_DISTRO;
         }
 
         if (distro) {
@@ -343,37 +397,50 @@ async function sourceRosAndWorkspace(): Promise<void> {
                     name: "setup",
                     ext: setupScriptExt,
                 });
-                env = await ros_utils.sourceSetupFile(setupScript, env);
+
+                outputChannel.appendLine(`Sourcing ROS Distro: ${setupScript}`);
+                newEnv = await ros_utils.sourceSetupFile(setupScript, newEnv);
             } catch (err) {
                 vscode.window.showErrorMessage(`Could not source ROS setup script at "${setupScript}".`);
             }
         } else if (process.env.ROS_DISTRO) {
-            env = process.env;
+            newEnv = process.env;
         }
     }
+
+    let workspaceOverlayPath: string = "";
     // Source the workspace setup over the top.
-    // TODO: we should test what's the build tool (catkin vs colcon).
-    let workspaceOverlayPath: string;
-    workspaceOverlayPath = path.join(`${baseDir}`, "devel_isolated");
-    if (!await pfs.exists(workspaceOverlayPath)) {
-        workspaceOverlayPath = path.join(`${baseDir}`, "devel");
+
+    if (newEnv.ROS_VERSION === "1") {
+        workspaceOverlayPath = path.join(`${vscode.workspace.rootPath}`, "devel_isolated");
+        if (!await pfs.exists(workspaceOverlayPath)) {
+            workspaceOverlayPath = path.join(`${vscode.workspace.rootPath}`, "devel");
+        }
+    } else {    // FUTURE: Revisit if ROS_VERSION changes - not clear it will be called 3
+        if (!await pfs.exists(workspaceOverlayPath)) {
+            workspaceOverlayPath = path.join(`${vscode.workspace.rootPath}`, "install");
+        }
     }
-    if (!await pfs.exists(workspaceOverlayPath)) {
-        workspaceOverlayPath = path.join(`${baseDir}`, "install");
-    }
+
     let wsSetupScript: string = path.format({
         dir: workspaceOverlayPath,
         name: "setup",
         ext: setupScriptExt,
     });
 
-    if (env && typeof env.ROS_DISTRO !== "undefined" && await pfs.exists(wsSetupScript)) {
+    if (await pfs.exists(wsSetupScript)) {
+        outputChannel.appendLine(`Workspace overlay path: ${wsSetupScript}`);
+
         try {
-            env = await ros_utils.sourceSetupFile(wsSetupScript, env);
+            newEnv = await ros_utils.sourceSetupFile(wsSetupScript, newEnv);
         } catch (_err) {
             vscode.window.showErrorMessage("Failed to source the workspace setup file.");
         }
+    } else {
+        outputChannel.appendLine(`Not sourcing workspace does not exist yet: ${wsSetupScript}. Need to build workspace.`);
     }
+
+    env = newEnv;
 
     // Notify listeners the environment has changed.
     onEnvChanged.fire();

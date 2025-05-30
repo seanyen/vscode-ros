@@ -15,7 +15,7 @@ export function startCore(context: vscode.ExtensionContext) {
 
     let launchCoreCommand: string = "roscore";
     let processOptions: child_process.SpawnOptions = {
-        cwd: extension.baseDir,
+        cwd: vscode.workspace.rootPath,
         env: extension.env,
     };
 
@@ -51,7 +51,7 @@ export function launchMonitor(context: vscode.ExtensionContext) {
     );
 
     let stylesheet = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "assets", "ros", "core-monitor", "style.css")));
-    let script = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "out", "src", "ros", "ros1", "core-monitor", "main.js")));
+    let script = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "dist", "ros1_webview_main.js")));
 
     panel.webview.html = getCoreStatusWebviewContent(stylesheet, script);
 

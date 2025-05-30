@@ -19,12 +19,13 @@ export function sourceSetupFile(filename: string, env?: any): Promise<any> {
             exportEnvCommand = `cmd /c "\"${filename}\" && set"`;
         }
         else {
-            exportEnvCommand = `bash -c "source '${filename}' && env"`;
-            console.log ("executing " + exportEnvCommand);
+            // Force login shell, so ROS sources correctly in containers.
+            exportEnvCommand = `bash --login -c "source '${filename}' && env"`;
+            extension.outputChannel.appendLine("Sourcing Environment using: " + exportEnvCommand);
         }
 
         let processOptions: child_process.ExecOptions = {
-            cwd: extension.baseDir,
+            cwd: vscode.workspace.rootPath,
             env: env,
         };
         child_process.exec(exportEnvCommand, processOptions, (error, stdout, _stderr) => {
@@ -48,7 +49,7 @@ export function sourceSetupFile(filename: string, env?: any): Promise<any> {
 export function xacro(filename: string): Promise<any> {
     return new Promise((resolve, reject) => {
         let processOptions = {
-            cwd: extension.baseDir,
+            cwd: vscode.workspace.rootPath,
             env: extension.env,
             windowsHide: false,
         };
@@ -57,7 +58,7 @@ export function xacro(filename: string): Promise<any> {
         if (process.platform === "win32") {
             xacroCommand = `cmd /c "xacro "${filename}""`;
         } else {
-            xacroCommand = `bash -c "xacro '${filename}' && env"`;
+            xacroCommand = `bash --login -c "xacro '${filename}' && env"`;
         }
 
         child_process.exec(xacroCommand, processOptions, (error, stdout, _stderr) => {

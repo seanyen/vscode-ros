@@ -50,7 +50,7 @@ export async function updateCppProperties(context: vscode.ExtensionContext): Pro
  */
 async function updateCppPropertiesInternal(): Promise<void> {
     let includes = await rosApi.getIncludeDirs();
-    const workspaceIncludes = await rosApi.getWorkspaceIncludeDirs(extension.baseDir);
+    const workspaceIncludes = await rosApi.getWorkspaceIncludeDirs(vscode.workspace.rootPath);
     includes = includes.concat(workspaceIncludes);
 
     if (process.platform === "linux") {
@@ -77,11 +77,34 @@ async function updateCppPropertiesInternal(): Promise<void> {
         version: 4,
     };
 
+    const filename = path.join(vscode.workspace.rootPath, ".vscode", "c_cpp_properties.json");
+
     if (process.platform === "linux") {
+        // set the default configurations.
         cppProperties.configurations[0].intelliSenseMode = "gcc-" + process.arch
         cppProperties.configurations[0].compilerPath = "/usr/bin/gcc"
         cppProperties.configurations[0].cStandard = "gnu11"
-        cppProperties.configurations[0].cppStandard = "c++14"
+        cppProperties.configurations[0].cppStandard = getCppStandard()
+
+        // read the existing file
+        try {
+            let existing: any = JSON.parse(await pfs
+                .readFile(filename)
+                .then(buffer => buffer.toString()));
+
+            // if the existing configurations are different from the defaults, use the existing values
+            if (existing.configurations && existing.configurations.length > 0) {
+                const existingConfig = existing.configurations[0];
+
+                cppProperties.configurations[0].intelliSenseMode = existingConfig.intelliSenseMode || cppProperties.configurations[0].intelliSenseMode;
+                cppProperties.configurations[0].compilerPath = existingConfig.compilerPath || cppProperties.configurations[0].compilerPath;
+                cppProperties.configurations[0].cStandard = existingConfig.cStandard || cppProperties.configurations[0].cStandard;
+                cppProperties.configurations[0].cppStandard = existingConfig.cppStandard || cppProperties.configurations[0].cppStandard;
+            }
+        }
+        catch (error) {
+            // ignore
+        }
     }
 
     // Ensure the ".vscode" directory exists then update the C++ path.
@@ -91,7 +114,6 @@ async function updateCppPropertiesInternal(): Promise<void> {
         await pfs.mkdir(dir);
     }
 
-    const filename = path.join(vscode.workspace.rootPath, ".vscode", "c_cpp_properties.json");
     await pfs.writeFile(filename, JSON.stringify(cppProperties, undefined, 2));
 }
 
@@ -114,5 +136,31 @@ function updatePythonAutoCompletePathInternal() {
  * Updates the python analysis path to support ROS.
  */
 function updatePythonAnalysisPathInternal() {
-  vscode.workspace.getConfiguration().update(PYTHON_ANALYSIS_PATHS, extension.env.PYTHONPATH.split(path.delimiter));
+    vscode.workspace.getConfiguration().update(PYTHON_ANALYSIS_PATHS, extension.env.PYTHONPATH.split(path.delimiter));
+}
+
+function getCppStandard() {
+    switch (vscode.workspace.getConfiguration().get("ros.distro"))
+    {
+        case "kinetic":
+        case "lunar":
+            return "c++11"
+        case "melodic":
+        case "noetic":
+        case "ardent":
+        case "bouncy":
+        case "crystal":
+        case "dashing":
+        case "eloquent":
+        case "foxy":
+            return "c++14"
+        case "galactic":
+        case "humble":
+        case "iron":
+        case "jazzy":
+        case "rolling":
+            return "c++17"
+        default:
+            return "c++17"
+    }
 }
